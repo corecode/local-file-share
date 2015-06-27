@@ -1,0 +1,27 @@
+* Ephemeral file share on LAN
+
+No more Drive or Dropbox.  Just run
+
+#+begin_src sh
+share myfile.zip
+#+end_src
+
+and on the receiving side
+
+#+begin_src sh
+pull
+#+end_src
+
+and you transfer the file.
+
+** Limitations
+
+All simple, barely any error handling, no encryption.
+
+** Meta
+
+Copyright (c) 2015, Simon Schubert <2@0x2c.org>.  See ~COPYING-AGPL~
+for license terms.
+
+Feedback and patches are always welcome.  Please submit via GitHub pull
+request, or contact me directly by mail.
