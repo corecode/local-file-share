@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+require 'dnssd'
+require 'etc'
+require 'socket'
+
+filename = ARGV[0]
+
+if !filename
+  $stderr.puts "usage: share <file>"
+  exit 1
+end
+
+servname = "%s on %s" % [Etc.getlogin, Socket.gethostname]
+
+begin
+  port = rand(5535) + 60000
+  servsock = TCPServer.new(port)
+rescue Errno::EADDRINUSE
+  retry
+end
+
+File.open(filename, 'r') do |file|
+  announcename = File.basename(filename)
+  puts "sharing #{announcename}"
+
+  info = DNSSD::TextRecord.new 'file' => announcename
+  DNSSD.announce(servsock, servname, "localfileshare", info)
+
+  puts "waiting for connection"
+  connsock = servsock.accept
+  clientname = connsock.remote_address.getnameinfo.first
+  puts "connection from #{clientname}"
+  sent = 0
+  while !file.eof
+    buf = file.read(1024*1024)
+    connsock.write(buf)
+    sent += buf.bytesize
+    print "\rsent #{sent} bytes..."
+  end
+  connsock.shutdown
+  puts " done."
+end
+
+servsock.close

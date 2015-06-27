@@ -1,7 +1,16 @@
+#!/usr/bin/env ruby
+
 require 'dnssd'
 
 def recv(res)
   filename = res.text_record['file']
+  puts "pulling #{filename}"
+
+  if File.exist? filename
+    $stderr.puts "#{filename} already exists"
+    exit 1
+  end
+
   File.open(filename, File::WRONLY | File::CREAT | File::EXCL) do |outf|
     conn = res.connect()
     puts "connected to #{res.target}"
@@ -10,13 +19,16 @@ def recv(res)
       buf = conn.read(1024*1024)
       outf.write(buf)
       recvd += buf.bytesize
+      print "\rreceived #{recvd} bytes..."
     end
     conn.close
-    puts "done receiving #{recvd}"
+    puts "done."
   end
 end
 
+puts "searching for shared files"
 DNSSD.browse!('_localfileshare._tcp') do |reply|
+  puts "#{reply.name} is advertising"
   DNSSD.resolve!(reply) do |res|
     recv(res)
     exit 0
