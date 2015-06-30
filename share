@@ -29,8 +29,7 @@ end
 servname = "%s on %s" % [Etc.getlogin, Socket.gethostname]
 
 begin
-  port = rand(5535) + 60000
-  servsock = TCPServer.new(port)
+  servsock = TCPServer.new(0)
 rescue Errno::EADDRINUSE
   retry
 end
